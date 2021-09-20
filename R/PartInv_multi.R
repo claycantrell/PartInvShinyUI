@@ -189,6 +189,7 @@ qnormmix <- function(p, mean1 = 0, sd1 = 1, mean2 = 0, sd2 = 1, pmix1 = 0.5,
 #'                true negative (C), false negative (D); proportion selected, 
 #'                success ratio, sensitivity, and specificity. 
 #' @examples
+#' # single dimension
 #' PartInvMulti_we(propsel = .10,
 #'                 weights_item = c(1, 0.9, 0.8, 1),
 #'                 weights_latent = 0.9,
@@ -199,7 +200,7 @@ qnormmix <- function(p, mean1 = 0, sd1 = 1, mean2 = 0, sd2 = 1, pmix1 = 0.5,
 #'                 nu_r = c(.225, .025, .010, .240),
 #'                 nu_f = c(.225, -.05, .240, -.025),
 #'                 Theta_r = diag(.96, 4))
-#' 
+#' # multiple dimensions
 #' lambda_matrix <- matrix(0,nrow = 5, ncol = 2)
 #' lambda_matrix[1:2,1] <- c(.322, .655)
 #' lambda_matrix[3:5,2] <- c(.398, .745, .543)
