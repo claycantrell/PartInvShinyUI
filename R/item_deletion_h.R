@@ -8,7 +8,13 @@
 #' @param cut_z: pre-specified cutoff score on the observed composite. This 
 #'        argument is ignored when `propsel` has input
 #' @param weights_item: a vector of item weights
-#' @param n_dim: number of dimensions. Assumes dimensions are of equal length
+#' @param n_dim: number of dimensions, 1 by default. If the user does not supply 
+#'        a different value, proceeds with the assumption that the scale is 
+#'        unidimensional
+#' @param n_i_per_dim: a vector containing the number of items in each 
+#'        dimension; NULL by default. If the user provides a value for n_dim 
+#'        that is > 1 but leaves n_i_per_dim = NULL, assumes that the subscales 
+#'        have an equal number of items. 
 #' @param weights_latent: a  vector of latent factor weights
 #' @param alpha_r: a vector of latent factor mean for the reference group.
 #' @param alpha_f: (optional) a vector of latent factor mean for the focal  
@@ -22,24 +28,22 @@
 #'        under the partial invariance condition; if no input, set equal to 
 #'        lambda_r.
 #' @param nu_r_p: a matrix of measurement intercepts for the reference group 
-#'         under the partial invariance condition.
+#'        under the partial invariance condition.
 #' @param nu_f_p: (optional) a matrix of measurement intercepts for the focal 
-#'         group under the partial invariance condition; if no input, set equal 
-#'         to nu_r.
+#'        group under the partial invariance condition; if no input, set equal 
+#'        to nu_r.
 #' @param Theta_r_p: a matrix of the unique factor variances and covariances 
-#'         for the reference group under the partial invariance condition.
+#'        for the reference group under the partial invariance condition.
 #' @param Theta_f_p: (optional) a matrix of the unique factor variances and 
-#'         covariances for the focal group under the partial invariance
-#'         condition; if no input, set equal to Theta_r.
+#'        covariances for the focal group under the partial invariance
+#'        condition; if no input, set equal to Theta_r.
 #' @param pmix_ref: Proportion of the reference group; 
-#'         default to 0.5 (i.e., two populations have equal size)
+#'        default to 0.5 (i.e., two populations have equal size)
 #' @param plot_contour: logical; whether the contour of the two populations 
-#'         should be plotted; default to TRUE
-#' @param print_pandoc_table: logical; whether delta table should be Pandoc  
-#'         formatted and printed
+#'        should be plotted; default to TRUE
 #' @param return_results: logical; whether the outputs from each call 
-#'         of \code{PartInv_Multi_we} should also be returned as part of the
-#'         returned object; default to FALSE
+#'        of \code{PartInv_Multi_we} should also be returned as part of the
+#'        returned object; default to FALSE
 #' @return a list of the following two elements (or a list of the following 
 #'        four elements if return_results == TRUE):
 #'        - delta_table: a (8 x number of items) dataframe that stores Cohen's 
@@ -83,9 +87,8 @@
 #'                             theta_r_p = diag(1, 5),
 #'                             theta_f_p = c(1, .95, .80, .75, 1), 
 #'                             plot_contour = FALSE,
-#'                             print_pandoc_table = TRUE, 
 #'                             return_results = TRUE)
-#' multi_dim$delta_h
+#' multi_dim$delta_table
 #' multi_dim$store_h$full
 #' multi_dim$store_h$deleteitem_1
 #' multi_dim$strict_results$full
@@ -105,29 +108,45 @@
 #'                              nu_f_p = c(.225, -.05, .240, -.025),
 #'                              theta_r_p = diag(.96, 4),
 #'                              n_dim = 1, plot_contour = FALSE, 
-#'                              print_pandoc_table = TRUE,
 #'                              return_results = FALSE)
-#' single_dim$delta_h
+#' single_dim$delta_table
 #' single_dim$store_h$full
 #' single_dim$store_h$deleteitem_1
 #' single_dim$strict_results$full
 #' single_dim$strict_results$deleteitem_1
 #' single_dim$partial_results$full
-#' single_dim$strict_results$deleteitem_1                                        
+#' single_dim$strict_results$deleteitem_1  
+#'
+#' # If we specify return_results = FALSE
+#' single_dim2 <- item_deletion_h(propsel = .10,
+#'                                weights_item = c(1, 0.9, 0.8, 1),
+#'                                weights_latent = 0.9,
+#'                                alpha_r = 0.5,
+#'                                alpha_f = 0,
+#'                                psi_r = 1,
+#'                                lambda_r_p = c(.3, .5, .9, .7),
+#'                                nu_r_p = c(.225, .025, .010, .240),
+#'                                nu_f_p = c(.225, -.05, .240, -.025),
+#'                                theta_r_p = diag(.96, 4),
+#'                                n_dim = 1, plot_contour = FALSE,
+#'                                return_results = FALSE)
+#' single_dim2$delta_table
+#' single_dim2$store_h$full
+#' single_dim2$store_h$deleteitem_1                     
 
-item_deletion_h <- function(propsel, cut_z = NULL, weights_item, 
-                                  n_dim,
-                                  weights_latent,
-                                  alpha_r, alpha_f = alpha_r,
-                                  psi_r, psi_f = psi_r,
-                                  lambda_r_p, lambda_f_p = lambda_r_p, 
-                                  nu_r_p, nu_f_p = nu_r_p,
-                                  theta_r_p, theta_f_p = theta_r_p,
-                                  pmix_ref = 0.5, 
-                                  plot_contour = TRUE,
-                                  print_pandoc_table = TRUE, 
-                                  return_results = FALSE,
-                                  ...) {
+item_deletion_h <- function(propsel, cut_z = NULL, 
+                            weights_item, 
+                            n_dim,
+                            weights_latent,
+                            alpha_r, alpha_f = alpha_r,
+                            psi_r, psi_f = psi_r,
+                            lambda_r_p, lambda_f_p = lambda_r_p, 
+                            nu_r_p, nu_f_p = nu_r_p,
+                            theta_r_p, theta_f_p = theta_r_p,
+                            pmix_ref = 0.5, 
+                            plot_contour = TRUE,
+                            return_results = FALSE,
+                            ...) {
 
   n_items <- length(weights_item)
   # Start with pre-allocating space:
@@ -217,12 +236,6 @@ item_deletion_h <- function(propsel, cut_z = NULL, weights_item,
                                c(1:n_items), c(rep(")")))
   rownames(delta_table) <- c("TP", "FP", "TN", "FN", "PS", "SR", "SE", "SP")
   
-  if (print_pandoc_table == TRUE) {
-    pandoc.table(delta_table, style = "rmarkdown", justify = "center",
-                 caption = "Delta h for selection accuracy indices when item i
-                 is deleted") 
-    }
-  
   if (return_results == TRUE) {
     return(list("delta_table" = delta_table, 
                 "store_h" = store_h,
@@ -241,38 +254,78 @@ item_deletion_h <- function(propsel, cut_z = NULL, weights_item,
 # deleted, and redistributes this item's weight across the remaining items.
 
 #' @param weights_item: a vector of item weights
-#' @param n_dim: number of dimensions (assumes each subscale is of equal length)
+#' @param n_dim: number of dimensions, 1 by default. If the user does not supply 
+#'        a different value, proceeds with the assumption that the scale is 
+#'        unidimensional
+#' @param n_i_per_dim: a vector containing the number of items in each 
+#'        dimension; NULL by default. If the user provides a value for n_dim 
+#'        that is > 1 but leaves n_i_per_dim = NULL, assumes that the subscales 
+#'        have an equal number of items. 
 #' @param del_i: index of the item to be deleted
 #' 
 #' @return take_one_out: weights vector with redistributed weights
+#' @examples
+#' one_dim_weights <- c(1:7)
+#' del_redist_weights(one_dim_weights, del_i = 2)
+#' one_dim_weights2 <- c(1:7)
+#' del_redist_weights(one_dim_weights2, n_dim = 1, n_i_per_dim = 7, del_i = 2)
+#' multi_equal_len_weights <- c(1:9)
+#' del_redist_weights(multi_equal_len_weights, n_dim = 3, del_i = 2)
+#' multi_equal_len_weights2 <- c(1:9)
+#' del_redist_weights(multi_equal_len_weights2, n_dim = 3, 
+#'                    n_i_per_dim = c(3, 3, 3), del_i = 2)
+#' multi_unequal_len_weights <- c(1:12)
+#' del_redist_weights(multi_unequal_len_weights, n_dim = 3, 
+#'                    n_i_per_dim = c(3, 6, 3), del_i = 2)
+#' error_ex <- c(1:12)
+#' del_redist_weights(error_ex, n_dim = -3, 
+#'                    n_i_per_dim = c(3, 6, 3), del_i = 2)
 
-del_redist_weights <- function(weights_item, n_dim, n_i_per_dim, del_i) {
+del_redist_weights <- function(weights_item, n_dim, n_i_per_dim,  n_i_per_dim = NULL,
+                               del_i) {
   n_items <- length(weights_item)
-  n_i_per_dim <- n_items / n_dim # subscale length
-  take_one_out <- weights_item
-  take_one_out[del_i] <- 0 # assign 0 weight to the item to be deleted
-  # create vector of indices of length = num items in weights_item
-  indices <- n_items
-  if (n_dim == 1) {
-    weights_item <- take_one_out
-  }
-  if (n_dim > 1) {
-  # split indices into dimensions
-  i_by_dim <- split(1:indices, cut(seq_along(1:indices), n_dim, labels = FALSE))
-  for(k in 1:n_dim) { # loop through the number of dimensions
-    if(del_i %in% i_by_dim[[k]]){ # if index del_i is in dimension k
-      # create temporary vector to store the remaining indices in dimension k
-      temp_i <- i_by_dim[[k]][i_by_dim[[k]] != del_i] 
-      for(j in temp_i) { # re-weight the remaining indices in the subscale
-        take_one_out[j] <- take_one_out[j] / (n_i_per_dim - 1) * n_i_per_dim
+  take_one_out <- weights_item; take_one_out[del_i] <- 0
+  
+  # Unidimensional
+  if ((n_dim == 1) & (is.null(n_i_per_dim) | length(n_i_per_dim) == 1)) {
+    take_one_out <- take_one_out / (n_items - 1) * n_items
+    
+  # Multidimensional, equal n  
+  } else if ((n_dim > 1) & is.null(n_i_per_dim)) { 
+    subscale_len <- n_items / n_dim # subscale length
+    # Split indices into dimensions
+    i_by_dim <- split(1:n_items, cut(seq_along(1:n_items), n_dim, 
+                                     labels = FALSE))
+    for(k in 1:n_dim) { # Loop through the number of dimensions
+      if(del_i %in% i_by_dim[[k]]) { # If del_i is in dimension k
+        # Create temporary vector to store the remaining indices in dimension k
+        temp_i <- i_by_dim[[k]][i_by_dim[[k]] != del_i] 
+        for(j in temp_i) { # Re-weight the remaining indices in the subscale
+          take_one_out[j] <- take_one_out[j] / (subscale_len - 1) * subscale_len
+        }
       }
     }
-  }
-    weights_item <- take_one_out
+  # Multidimensional, unequal n
+  } else if ((n_dim > 1) & !is.null(n_i_per_dim)) { 
+    # Split indices into dimensions
+    i_by_dim <- split(1:n_items, cut(seq_along(1:n_items), 
+                                       breaks = cumsum(c(0, n_i_per_dim)), 
+                                       labels = FALSE))
+    for(k in 1:n_dim) { #Loop through the number of dimensions
+      if(del_i %in% i_by_dim[[k]]){ # If del_i is in dimension k
+        subscale_len <- n_i_per_dim[k]
+        # Create temporary vector to store the remaining indices in dimension k
+        temp_i <- i_by_dim[[k]][i_by_dim[[k]] != del_i] 
+        for(j in temp_i) { # Re-weight the remaining indices in the subscale
+          take_one_out[j] <- take_one_out[j] / (subscale_len - 1) * subscale_len
+        }
+      }
+    }
+  } else {
+    stop('Check n_dim and n_i_per_dim')
   }
   return(take_one_out)
 }
-
 
 
 #' Computes Cohen's h (Cohen, 1988) for the difference in two proportions:
@@ -302,7 +355,7 @@ cohens_h <- function(p1, p2) {
 #' @param h_i_del: h effect sizes for when the item is deleted
 
 #' @return Cohen's h for the difference in the selection accuracy index when the
-#'  item is deleted
+#' item is deleted
 delta_h <- function(h_R, h_i_del) {
   sign(h_R - h_i_del) * abs(abs(h_i_del) - abs(h_R))
 }
@@ -318,11 +371,11 @@ delta_h <- function(h_R, h_i_del) {
 #' the corresponding h for each of the indices.
 
 #' @param strict_output: \code{PartInv_Multi_we} output (a list) under strict 
-#' invariance 
+#'        invariance 
 #' @param partial_output: \code{PartInv_Multi_we} output (a list) under partial
-#' invariance
+#'        invariance
 #' @return A 8x3 dataframe, columns for strict invariance, partial invariance,
-#' and h.
+#'        and h.
 ref_acc_indices_h <- function(strict_output, partial_output) {
   ref_par_strict <- partial_output[4]$summary[1][, 1]
   ref_strict <- strict_output[4]$summary[1][, 1]
