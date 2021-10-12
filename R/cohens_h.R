@@ -19,6 +19,8 @@ cohens_h <- function(p1, p2) {
   # Returns: 
   #  Cohen's h  
   
+  #trial
+  
   h <-  2 * asin(sqrt(p1)) - 2 * asin(sqrt(p2))
   return(h)
 }
