@@ -25,6 +25,8 @@ pnormmix <- function(q, mean1 = 0, sd1 = 1, mean2 = 0, sd2 = 1, pmix1 = 0.5,
                      lower.tail = lower.tail))
 }
 
+# pnormmix(, mean1 = 1.53, sd1 = 0.89, mean2 = 1.32, sd2 = 0.88, pmix1 = 0.5, lower.tail = FALSE)
+
 #' Quantile function of a mixture of two normal distributions. 
 #' \code{qnormmix} returns the quantile corresponding to p or \eqn{1 - q} on 
 #' the mixture normal distribution.
@@ -139,7 +141,7 @@ contour_bvnorm <- function(mean1 = 0, sd1 = 1, mean2 = 0, sd2 = 1,
 .partit_bvnorm <- function(cut1, cut2, mean1 = 0, sd1 = 1, mean2 = 0, sd2 = 1, 
                            cor12 = 0, cov12 = cor12 * sd1 * sd2) {
   Sigma <- matrix(c(sd1^2, cov12, cov12, sd2^2), nrow = 2)
-  C <- pmnorm(c(cut1, cut2), c(mean1, mean2), Sigma)
+  C <- mnormt::pmnorm(c(cut1, cut2), c(mean1, mean2), Sigma)
   B <- pnorm(cut1, mean1, sd1) - C
   D <- pnorm(cut2, mean2, sd2) - C
   A <- 1 - B - C - D
@@ -149,3 +151,6 @@ contour_bvnorm <- function(mean1 = 0, sd1 = 1, mean2 = 0, sd2 = 1,
   specificity <- C / (C + B)
   c(A, B, C, D, propsel, success_ratio, sensitivity, specificity)
 }
+
+# .partit_bvnorm(cut1 = 8.45, cut2 = 9, mean1 = 0, sd1 = 1, mean2 = 1.53, sd2 = 0.89,
+#                cov12 = 0.80)
