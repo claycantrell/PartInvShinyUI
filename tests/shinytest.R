@@ -1,0 +1,5 @@
+
+
+#library(shinytest)
+#shinytest::testApp("../")
+
