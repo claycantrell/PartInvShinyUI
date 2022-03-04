@@ -69,30 +69,30 @@ NULL
 #'         Theta_r = diag(.96, 4),
 #'         labels = c("Female", "Male"))
 #' # multiple dimensions
-#' lambda_matrix <- matrix(0,nrow = 5, ncol = 2)
-#' lambda_matrix[1:2, 1] <- c(.322, .655)
-#' lambda_matrix[3:5, 2] <- c(.398, .745, .543)
-#' PartInv(propsel = .05,
-#'         weights_latent = c(0.5, 0.5),
-#'         alpha_r = c(0, 0),
-#'         alpha_f = c(-0.3, 0.1),
-#'         psi_r = matrix(c(1, 0.5, 0.5, 1), nrow = 2),
-#'         lambda_r = lambda_matrix,
-#'         nu_r = c(.225, .025, .010, .240, .125),
-#'         nu_f = c(.225, -.05, .240, -.025, .125),
-#'         Theta_r = diag(1, 5),
-#'         Theta_f = c(1, .95, .80, .75, 1))
-#' PartInvMulti_we(propsel = .10,
-#'                 weights_item = c(1/3, 1/3, 1/3, 1/3),
-#'                 weights_latent = 1,
-#'                 alpha_r = 0.5,
-#'                 alpha_f = 0,
-#'                 psi_r = 1,
-#'                 lambda_r = c(.3, .5, .9, .7),
-#'                 nu_r = c(.225, .025, .010, .240),
-#'                 nu_f = c(.225, -.05, .240, -.025),
-#'                 Theta_r = diag(.96, 4),
-#'                 labels = c("female", "male"))
+# lambda_matrix <- matrix(0,nrow = 5, ncol = 2)
+# lambda_matrix[1:2, 1] <- c(.322, .655)
+# lambda_matrix[3:5, 2] <- c(.398, .745, .543)
+# PartInv(propsel = .05,
+#         weights_latent = c(0.5, 0.5),
+#         alpha_r = c(0, 0),
+#         alpha_f = c(-0.3, 0.1),
+#         psi_r = matrix(c(1, 0.5, 0.5, 1), nrow = 2),
+#         lambda_r = lambda_matrix,
+#         nu_r = c(.225, .025, .010, .240, .125),
+#         nu_f = c(.225, -.05, .240, -.025, .125),
+#         Theta_r = diag(1, 5),
+#         Theta_f = c(1, .95, .80, .75, 1))
+# PartInvMulti_we(propsel = .10,
+#         weights_item = c(1/3, 1/3, 1/3, 1/3),
+#         weights_latent = 1,
+#         alpha_r = 0.5,
+#         alpha_f = 0,
+#         psi_r = 1,
+#         lambda_r = c(.3, .5, .9, .7),
+#         nu_r = c(.225, .025, .010, .240),
+#         nu_f = c(.225, -.05, .240, -.025),
+#         Theta_r = diag(.96, 4),
+#         labels = c("female", "male"))
 #' @export
 PartInvMulti_we <- function(propsel, cut_z = NULL,
                             weights_item = NULL, 
@@ -213,6 +213,7 @@ PartInvMulti_we <- function(propsel, cut_z = NULL,
     y_cord <- rep(cut_z + c(.25, -.25) * sd_zr, each = 2)
     text(x_cord, y_cord, c("A", "B", "D", "C"))
     p <- recordPlot()
+    dev.off()
   }
   # return a list of results and the plot
   list(propsel = propsel, cutpt_xi = cut_xi, cutpt_z = cut_z, 
@@ -220,6 +221,7 @@ PartInvMulti_we <- function(propsel, cut_z = NULL,
        ai_ratio = dat["Proportion selected", 3] / 
          dat["Proportion selected", 1], plot = p)
 }
+
 
 #' @rdname PartInvMulti_we
 #' @export
